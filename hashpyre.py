@@ -2,6 +2,7 @@
 
 import re
 import redis
+import sys
 
 """
 Creates hashmap values in redis based on a text file. Can also
@@ -103,7 +104,7 @@ class FileParser(object):
 	HASH_NAME_REGEX = re.compile(HASH_NAME)
 	
 	# TODO Might have to add more parameters here for security
-	def __init__(self, host, port, password):
+	def __init__(self, host, port, password = ""):
 		# TODO Check what happens when redis server does not respond as expected
 		self.__redis = redis.StrictRedis(host=host, port=port, password=password)
 
@@ -136,3 +137,36 @@ class FileParser(object):
 					print "Inserted map " + redis_hash.hash_name
 				elif line[0] != "#":
 					raise UnknownCommandException("This line does not match the grammar: " + line)
+
+
+CL_ARGS = ["-f", "-h", "-p", "-s"]
+REQUIRED_ARGS = ["-f", "-h", "-p"]
+
+def cl_arg_parser(argline):
+	args_passed = {}
+
+	for argument in argline:
+		arg = argument[0:2]
+		if arg not in CL_ARGS:
+			raise InvalidCommandSequenceException("Unknown argument " + arg)
+		else:
+			args_passed[arg] = argument[2:len(argument)]
+	
+	# Check if any required arg was not passed
+	for arg in REQUIRED_ARGS:
+		# TODO Check!
+		if args_passed[arg] is None:
+			raise InvalidCommandSequeceException("Need to set argument " + arg)
+	
+	return args_passed
+
+def run(arg_dictionary):
+	if "-p" in arg_dictionary.keys():
+		parser = FileParser(arg_dictionary["-h"], arg_dictionary["-p"], arg_dictionary["-s"])
+	else:
+		parser = FileParser(arg_dictionary["-h"], arg_dictionary["-p"])
+	
+	parser.parse(arg_dictionary["-f"])
+
+if __name__ == "__main__":
+	run(cl_arg_parse(sys.argv))
