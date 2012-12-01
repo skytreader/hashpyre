@@ -50,6 +50,10 @@ class RedisHash(object):
 	An object representing a hash map that we insert to redis.
 	"""
 	
+	def __init__(self):
+		self.__hash_name = None
+		self.__hash_table = {}
+
 	@property
 	def hash_name(self):
 		return self.__hash_name
@@ -92,21 +96,32 @@ class FileParser(object):
 	"""
 	
 	#TODO Might have to fix this depending on requirements
+	# FIXME Handle trailing spaces for all expressions
 	KEY = r"\w+"
 	KEY_REGEX = re.compile(KEY)
 	DEFAULT_SEPARATOR = ":"
 	VALUE = r"[\w\s]+"
 	VALUE_REGEX = re.compile(VALUE)
-	ASSIGNMENT = KEY + r"\s*" + DEFAULT_SEPARATOR + r"\s*" + VALUE
+	ASSIGNMENT = "^" + KEY + r"\s*" + DEFAULT_SEPARATOR + r"\s*" + VALUE + "$"
 	ASSIGNMENT_REGEX = re.compile(ASSIGNMENT)
 
 	HASH_NAME = r"\w+"
-	HASH_NAME_REGEX = re.compile(HASH_NAME)
+	HASH_NAME_REGEX = re.compile(r"^\s*" + HASH_NAME + r"\s*$")
+
+	BLANK_LINE = r"^\s*$"
+	BLANK_LINE_REGEX = re.compile(BLANK_LINE)
 	
 	# TODO Might have to add more parameters here for security
 	def __init__(self, host, port, password = ""):
 		# TODO Check what happens when redis server does not respond as expected
 		self.__redis = redis.StrictRedis(host=host, port=port, password=password)
+		print "Connected to Redis at " + host + ":" + str(port)
+		self.__separator = FileParser.DEFAULT_SEPARATOR
+		self.__separator_regex = re.compile("\s*" + self.separator + r"\s*")
+	
+	@property
+	def separator_regex(self):
+		return self.__separator_regex
 
 	@property
 	def separator(self):
@@ -117,24 +132,29 @@ class FileParser(object):
 		if not len(s):
 			raise SettingException("Separators should be one character only.")
 		self.__separator = s
+		self.__separtor_regex = re.compile(r"\s*" + s + r"\s*")
 	
 	# TODO Indicate what line number did the error occur
-	def parse(filename):
+	def parse(self, filename):
 		redis_hash = RedisHash()
 
 		with open(filename, "r") as map_file:
 			for line in map_file:
-				if ASSIGNMENT_REGEX.match(line):
+				line = line[0:len(line)-1]
+				if FileParser.ASSIGNMENT_REGEX.match(line):
 					# Parse the line
-					line_parse = line.split(r"\s*" + DEFAULT_SEPARATOR + r"\s*")
-					redis_hash.hash_map[line_parse[0]] = line_parse[1]
-				elif HASH_NAME_REGEX.match(line):
+					line_parse = self.separator_regex.split(line)
+					redis_hash.hash_table[line_parse[0]] = line_parse[1]
+					print "Read assignment: " + str(line_parse)
+				elif FileParser.HASH_NAME_REGEX.match(line):
 					redis_hash.hash_name = line
 				elif line == "map()":
 					if redis_hash.hash_name is None:
 						raise InvalidCommandSequenceException("Hash name is not set since the last invocation of map()")
-					self.__redis.hmset(redis_hash.hash_name, redis_hash.hash_map)
+					self.__redis.hmset(redis_hash.hash_name, redis_hash.hash_table)
 					print "Inserted map " + redis_hash.hash_name
+				elif FileParser.BLANK_LINE_REGEX.match(line):
+					pass
 				elif line[0] != "#":
 					raise UnknownCommandException("This line does not match the grammar: " + line)
 
@@ -147,7 +167,7 @@ def cl_arg_parser(argline):
 
 	for argument in argline:
 		arg = argument[0:2]
-		if arg not in CL_ARGS:
+		if arg not in CL_ARGS and argument != argline[0]:
 			raise InvalidCommandSequenceException("Unknown argument " + arg)
 		else:
 			args_passed[arg] = argument[2:len(argument)]
@@ -161,12 +181,12 @@ def cl_arg_parser(argline):
 	return args_passed
 
 def run(arg_dictionary):
-	if "-p" in arg_dictionary.keys():
-		parser = FileParser(arg_dictionary["-h"], arg_dictionary["-p"], arg_dictionary["-s"])
+	if "-s" in arg_dictionary.keys():
+		parser = FileParser(arg_dictionary["-h"], int(arg_dictionary["-p"]), arg_dictionary["-s"])
 	else:
-		parser = FileParser(arg_dictionary["-h"], arg_dictionary["-p"])
+		parser = FileParser(arg_dictionary["-h"], int(arg_dictionary["-p"]))
 	
 	parser.parse(arg_dictionary["-f"])
 
 if __name__ == "__main__":
-	run(cl_arg_parse(sys.argv))
+	run(cl_arg_parser(sys.argv))

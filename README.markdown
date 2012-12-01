@@ -20,6 +20,6 @@ The Redis server password, when applicable.
 
 **Sample Invocation**
 
-    python hashpyre.py -finserts.txt -hlocalhost -p4096
+    python hashpyre.py -finserts.txt -hlocalhost -p6379
 
 To invoke `hashpyre` on a file named `inserts.txt` to be inserted on the local Redis server at port 4096.
