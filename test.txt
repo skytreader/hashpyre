@@ -3,19 +3,19 @@
 
 #################################################################
 MUSIC_ALBUMS_02
-name: A Rush of Blood to the Head
-artist: Coldplay
-artist01: Chris Martin
-artist02: Guy Berryman
-artist03: Will Champion
-artist04: Jonny Buckland
-LeadVocals: Chris Martin
-Bass_Guitar: Guy Berryman
-Drums: Will Champion
-Lead_guitar: Jonny Buckland
-recorded_Range_1: 1999
-recorded_Range_2: 2000
-Releasedate: 10 July 2000
+name:A Rush of Blood to the Head
+artist  :Coldplay
+artist01  :Chris Martin
+artist02 :Guy Berryman
+artist03:Will Champion
+artist04:Jonny Buckland
+LeadVocals :Chris Martin
+Bass_Guitar :Guy Berryman
+Drums  :Will Champion
+Lead_guitar  :Jonny Buckland
+recorded_Range_1  :1999
+recorded_Range_2  :2000
+Releasedate :10 July 2000
 map()
 
 # Moar comments!
