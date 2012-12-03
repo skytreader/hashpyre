@@ -100,7 +100,7 @@ class FileParser(object):
 	KEY = r"\w+"
 	KEY_REGEX = re.compile(KEY)
 	DEFAULT_SEPARATOR = ":"
-	VALUE = r"[\w\s\.\?\!\*\(\)\[\]\{\}]+"
+	VALUE = r".*"
 	VALUE_REGEX = re.compile(VALUE)
 	ASSIGNMENT = "^" + KEY + r"\s*" + DEFAULT_SEPARATOR + VALUE + "$"
 	ASSIGNMENT_REGEX = re.compile(ASSIGNMENT)
