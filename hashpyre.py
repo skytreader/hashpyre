@@ -68,7 +68,7 @@ class RedisHash(object):
 	
 	def clear(self):	
 		self.hash_name == None
-		self.hash_table = {}
+		self.__hash_table = {}
 
 class FileParser(object):
 	"""
@@ -155,6 +155,7 @@ class FileParser(object):
 						raise InvalidCommandSequenceException("Line " + str(line_count) + ": Hash name is not set since the last invocation of map()")
 					self.__redis.hmset(redis_hash.hash_name, redis_hash.hash_table)
 					print "Inserted map " + redis_hash.hash_name
+					redis_hash.clear()
 				elif FileParser.BLANK_LINE_REGEX.match(line):
 					pass
 				elif line[0] != "#":
