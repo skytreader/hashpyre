@@ -6,21 +6,21 @@ A simple "language" to insert hashmaps to Redis.
 
 Invoke the script with the following arguments:
 
-- **-f** _required_  
-Indicates the filename of the hashmap inserts.
+- **_file_** _required_  
+Indicates the filename of the hashmap inserts. Must be the _last_ string passed as an argument.
 
-- **-h** _required_  
+- **-host** _required_  
 The Redis server host IP.
 
-- **-p** _required_  
+- **-port** _required_  
 The Redis server host port.
 
-- **-s**  
+- **-password**  
 The Redis server password, when applicable.
 
 **Sample Invocation**
 
-    python hashpyre.py -finserts.txt -hlocalhost -p6379
+    python hashpyre.py -host localhost -port 6379 inserts.txt
 
 To invoke `hashpyre` on a file named `inserts.txt` to be inserted on the local Redis server at port 4096.
 
@@ -65,3 +65,6 @@ Hashpyre.
 	ISBN  :9780262562379
     # Send map BOOKS_1 to Redis
     map()
+
+# TODO
+- Allow quoted values for the key-value pairings for better whitespace management.
