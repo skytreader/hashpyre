@@ -69,7 +69,7 @@ class RedisHash(object):
 	
 	def clear(self):	
 		self.hash_name == None
-		self.hash_table = {}
+		self.__hash_table = {}
 
 class FileParser(object):
 	"""
@@ -101,7 +101,7 @@ class FileParser(object):
 	KEY = r"\w+"
 	KEY_REGEX = re.compile(KEY)
 	DEFAULT_SEPARATOR = ":"
-	VALUE = r"[\w\s\.\?\!\*\(\)\[\]\{\}]+"
+	VALUE = r".*"
 	VALUE_REGEX = re.compile(VALUE)
 	ASSIGNMENT = "^" + KEY + r"\s*" + DEFAULT_SEPARATOR + VALUE + "$"
 	ASSIGNMENT_REGEX = re.compile(ASSIGNMENT)
@@ -140,6 +140,8 @@ class FileParser(object):
 		redis_hash = RedisHash()
 
 		with open(filename, "r") as map_file:
+			line_count = 1
+
 			for line in map_file:
 				line = line[0:len(line)-1]
 				if FileParser.ASSIGNMENT_REGEX.match(line):
@@ -151,17 +153,18 @@ class FileParser(object):
 					redis_hash.hash_name = line
 				elif line == "map()":
 					if redis_hash.hash_name is None:
-						raise InvalidCommandSequenceException("Hash name is not set since the last invocation of map()")
+						raise InvalidCommandSequenceException("Line " + str(line_count) + ": Hash name is not set since the last invocation of map()")
 					self.__redis.hmset(redis_hash.hash_name, redis_hash.hash_table)
 					print "Inserted map " + redis_hash.hash_name
+					redis_hash.clear()
 				elif FileParser.BLANK_LINE_REGEX.match(line):
 					pass
 				elif line[0] != "#":
-					raise UnknownCommandException("This line does not match the grammar: " + line)
-
+					raise UnknownCommandException("Line " + str(line_count) + ": Does not match the grammar")
 
 CL_ARGS = ["-f", "-h", "-p", "-s"]
 REQUIRED_ARGS = ["-f", "-h", "-p"]
+REQARGS_DESCRIPTION = {"-f":"filename of the insert file", "-h":"host of the Redis server", "-p":"port of the Redis server"}
 
 def cl_arg_parser(argline):
 	args_passed = {}
@@ -175,13 +178,20 @@ def cl_arg_parser(argline):
 	
 	# Check if any required arg was not passed
 	for arg in REQUIRED_ARGS:
-		# TODO Check!
-		if args_passed[arg] is None:
-			raise InvalidCommandSequeceException("Need to set argument " + arg)
+		try:
+			args_passed[arg]
+		except KeyError:
+			print "Error: Improper script usage.\nUsage:\n"
+			for arg in REQUIRED_ARGS:
+				print arg + " " + REQARGS_DESCRIPTION[arg]
+			return None
 	
 	return args_passed
 
 def run(arg_dictionary):
+	if arg_dictionary is None:
+		return
+
 	if "-s" in arg_dictionary.keys():
 		parser = FileParser(arg_dictionary["host"], arg_dictionary["port"], arg_dictionary["password"])
 	else:
