@@ -1,5 +1,6 @@
 #! usr/bin/env python
 
+import argparse
 import re
 import redis
 import sys
@@ -182,11 +183,20 @@ def cl_arg_parser(argline):
 
 def run(arg_dictionary):
 	if "-s" in arg_dictionary.keys():
-		parser = FileParser(arg_dictionary["-h"], int(arg_dictionary["-p"]), arg_dictionary["-s"])
+		parser = FileParser(arg_dictionary["host"], arg_dictionary["port"], arg_dictionary["password"])
 	else:
-		parser = FileParser(arg_dictionary["-h"], int(arg_dictionary["-p"]))
+		parser = FileParser(arg_dictionary["host"], int(arg_dictionary["port"]))
 	
-	parser.parse(arg_dictionary["-f"])
+	parser.parse(arg_dictionary["mapfile"])
 
 if __name__ == "__main__":
-	run(cl_arg_parser(sys.argv))
+	# run(cl_arg_parser(sys.argv))
+	argparser = argparse.ArgumentParser(description = "Command-line args for hashpyre.")
+	argparser.add_argument("-host", help = "the address of the Redis server", required=True)
+	argparser.add_argument("-port", help = "the port of the Redis server", type=int, required=True)
+	argparser.add_argument("-password", help = "the password to the Redis server, if required")
+	argparser.add_argument("mapfile", help = "the filename containing the mappings to be inserted")
+	args_passed = argparser.parse_args()
+	run(vars(args_passed))
+	
+
