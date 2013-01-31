@@ -12,6 +12,11 @@ put the hashmap names on a list.
 @author Chad Estioco
 """
 
+# CLI-args
+HOST = "-host"
+PORT = "-port"
+PASSWORD = "-password"
+
 # Exceptions
 
 class SettingException(Exception):
@@ -135,7 +140,6 @@ class FileParser(object):
 		self.__separator = s
 		self.__separtor_regex = re.compile(r"\s*" + s + r"\s*")
 	
-	# TODO Indicate what line number did the error occur
 	def parse(self, filename):
 		redis_hash = RedisHash()
 
@@ -146,7 +150,7 @@ class FileParser(object):
 				line = line[0:len(line)-1]
 				if FileParser.ASSIGNMENT_REGEX.match(line):
 					# Parse the line
-					line_parse = self.separator_regex.split(line)
+					line_parse = self.separator_regex.split(line, 1)
 					redis_hash.hash_table[line_parse[0]] = line_parse[1]
 					print "Read assignment: " + str(line_parse)
 				elif FileParser.HASH_NAME_REGEX.match(line):
@@ -162,32 +166,6 @@ class FileParser(object):
 				elif line[0] != "#":
 					raise UnknownCommandException("Line " + str(line_count) + ": Does not match the grammar")
 
-CL_ARGS = ["-f", "-h", "-p", "-s"]
-REQUIRED_ARGS = ["-f", "-h", "-p"]
-REQARGS_DESCRIPTION = {"-f":"filename of the insert file", "-h":"host of the Redis server", "-p":"port of the Redis server"}
-
-def cl_arg_parser(argline):
-	args_passed = {}
-
-	for argument in argline:
-		arg = argument[0:2]
-		if arg not in CL_ARGS and argument != argline[0]:
-			raise InvalidCommandSequenceException("Unknown argument " + arg)
-		else:
-			args_passed[arg] = argument[2:len(argument)]
-	
-	# Check if any required arg was not passed
-	for arg in REQUIRED_ARGS:
-		try:
-			args_passed[arg]
-		except KeyError:
-			print "Error: Improper script usage.\nUsage:\n"
-			for arg in REQUIRED_ARGS:
-				print arg + " " + REQARGS_DESCRIPTION[arg]
-			return None
-	
-	return args_passed
-
 def run(arg_dictionary):
 	if arg_dictionary is None:
 		return
@@ -200,11 +178,10 @@ def run(arg_dictionary):
 	parser.parse(arg_dictionary["mapfile"])
 
 if __name__ == "__main__":
-	# run(cl_arg_parser(sys.argv))
 	argparser = argparse.ArgumentParser(description = "Command-line args for hashpyre.")
-	argparser.add_argument("-host", help = "the address of the Redis server", required=True)
-	argparser.add_argument("-port", help = "the port of the Redis server", type=int, required=True)
-	argparser.add_argument("-password", help = "the password to the Redis server, if required")
+	argparser.add_argument(HOST, help = "the address of the Redis server", required=True)
+	argparser.add_argument(PORT, help = "the port of the Redis server", type=int, required=True)
+	argparser.add_argument(PASSWORD, help = "the password to the Redis server, if required")
 	argparser.add_argument("mapfile", help = "the filename containing the mappings to be inserted")
 	args_passed = argparser.parse_args()
 	run(vars(args_passed))
