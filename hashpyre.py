@@ -103,15 +103,31 @@ class FileParser(object):
     
     #TODO Might have to fix this depending on requirements
     # FIXME Handle trailing spaces for all expressions
-    KEY = r"\w+"
+    KEY = r"^\w+$"
+    """
+    The KEY_REGEX desscribes the allowed patterns for hashmap key names.
+    (A.K.A, the one paired with the values.)
+    """
     KEY_REGEX = re.compile(KEY)
     DEFAULT_SEPARATOR = ":"
     VALUE = r".*"
+    """
+    The VALUE_REGEX describes the allowed patterns for the values of
+    hashmap keys.
+    """
     VALUE_REGEX = re.compile(VALUE)
     ASSIGNMENT = "^" + KEY + r"\s*" + DEFAULT_SEPARATOR + VALUE + "$"
+    """
+    ASSIGNMENT_REGEX describes the pattern of an assignment statement
+    in our language.
+    """
     ASSIGNMENT_REGEX = re.compile(ASSIGNMENT)
 
     HASH_NAME = r"\w+"
+    """
+    HASH_NAME_REGEX describes the allowed patterns for the name of the
+    hash to be sent to Redis.
+    """
     HASH_NAME_REGEX = re.compile(r"^\s*" + HASH_NAME + r"\s*$")
 
     BLANK_LINE = r"^\s*$"
