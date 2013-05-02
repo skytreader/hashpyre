@@ -103,12 +103,12 @@ class FileParser(object):
     
     #TODO Might have to fix this depending on requirements
     # FIXME Handle trailing spaces for all expressions
-    KEY = r"^\w+$"
+    KEY = r"\w+"
     """
     The KEY_REGEX desscribes the allowed patterns for hashmap key names.
     (A.K.A, the one paired with the values.)
     """
-    KEY_REGEX = re.compile(KEY)
+    KEY_REGEX = re.compile("^" + KEY + "$")
     DEFAULT_SEPARATOR = ":"
     VALUE = r".*"
     """
@@ -116,7 +116,7 @@ class FileParser(object):
     hashmap keys.
     """
     VALUE_REGEX = re.compile(VALUE)
-    ASSIGNMENT = "^" + KEY + r"\s*" + DEFAULT_SEPARATOR + VALUE + "$"
+    ASSIGNMENT =  KEY + r"\s*" + DEFAULT_SEPARATOR + VALUE + "$"
     """
     ASSIGNMENT_REGEX describes the pattern of an assignment statement
     in our language.
@@ -175,13 +175,21 @@ class FileParser(object):
                 elif line == "map()":
                     if redis_hash.hash_name is None:
                         raise InvalidCommandSequenceException("Line " + str(line_count) + ": Hash name is not set since the last invocation of map()")
-                    self.__redis.hmset(redis_hash.hash_name, redis_hash.hash_table)
-                    print "Inserted map " + redis_hash.hash_name
+                    # Still not fool-proof. What if redis server goes
+                    # away after the ping? :\
+                    if self.__redis.ping():
+                        self.__redis.hmset(redis_hash.hash_name, redis_hash.hash_table)
+                        print "Inserted map " + redis_hash.hash_name
+                    else:
+                        # Mind the exception for ping. Will never get here
+                        print "Redis server unavailable. Skipping transaction: " + redis_hash.hash_name
                     redis_hash.clear()
                 elif FileParser.BLANK_LINE_REGEX.match(line):
                     pass
                 elif line[0] != "#":
                     raise UnknownCommandException("Line " + str(line_count) + ": Does not match the grammar")
+
+                line_count += 1
 
 def run(arg_dictionary):
     if arg_dictionary is None:
