@@ -22,7 +22,7 @@ The Redis server password, when applicable.
 
     python hashpyre.py -host localhost -port 6379 inserts.txt
 
-To invoke `hashpyre` on a file named `inserts.txt` to be inserted on the local Redis server at port 4096.
+To invoke `hashpyre` on a file named `inserts.txt` to be inserted on the local Redis server at port 6379.
 
 # Insert File Structure
 
