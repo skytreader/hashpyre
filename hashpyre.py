@@ -123,7 +123,7 @@ class FileParser(object):
     """
     ASSIGNMENT_REGEX = re.compile(ASSIGNMENT)
 
-    HASH_NAME = r"\w+"
+    HASH_NAME = r"\S+"
     """
     HASH_NAME_REGEX describes the allowed patterns for the name of the
     hash to be sent to Redis.

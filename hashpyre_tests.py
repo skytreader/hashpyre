@@ -18,6 +18,14 @@ class FileParserTest(unittest.TestCase):
         self.values = ("simplevalue", "value with spaces", "123", "s1mpl3", "m1x3d spac3",
             "!@#$^$%^^&", "This is a well constructed sentence.")
 
+        self.valid_hashes = ("spaceless", "SPACELESS", "with_underscores",
+            "WITH_UNDERSCORES", "with+plus+sign", "WITH_PLUS_SIGN",
+            "withnumbers123", "underscore_numbers_123", "plus+sign+numbers+123",
+            "WITHNUMBERS123", "UNDERSCORE_NUMBERS_123", "PLUS+SIGN+NUMBERS+123"
+            "j3j3m0nsm@llc@p$!", "J3J3M0NB!GC@P$^***&()")
+
+        self.invalid_hashes = ("with space", "WITH SPACE", "With Space")
+
         # Construct the valid and invalid assignment statements
         self.valid_assignments = []
         self.invalid_assignments = []
@@ -54,7 +62,7 @@ class FileParserTest(unittest.TestCase):
             self.assertFalse(FileParser.KEY_REGEX.match(invalid))
 
     def test_assignment_regex(self):
-        for valid in self.valid_assignments:    
+        for valid in self.valid_assignments: 
             self.assertTrue(FileParser.ASSIGNMENT_REGEX.match(valid))
 
         for invalid in self.invalid_assignments:
@@ -63,6 +71,13 @@ class FileParserTest(unittest.TestCase):
     def test_value_regex(self):
         for valid in self.values:
             self.assertTrue(FileParser.VALUE_REGEX.match(valid))
+
+    def test_hash_name_regex(self):
+        for valid in self.valid_hashes:
+            self.assertTrue(FileParser.HASH_NAME_REGEX.match(valid))
+
+        for invalid in self.invalid_hashes:
+            self.assertFalse(FileParser.HASH_NAME_REGEX.match(invalid))
 
 if __name__ == "__main__":
     unittest.main()
