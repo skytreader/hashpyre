@@ -170,8 +170,6 @@ class FileParser(object):
                     line_parse = self.separator_regex.split(line, 1)
                     redis_hash.hash_table[line_parse[0]] = line_parse[1]
                     print "Read assignment: " + str(line_parse)
-                elif FileParser.HASH_NAME_REGEX.match(line):
-                    redis_hash.hash_name = line
                 elif line == "map()":
                     if redis_hash.hash_name is None:
                         raise InvalidCommandSequenceException("Line " + str(line_count) + ": Hash name is not set since the last invocation of map()")
@@ -184,6 +182,8 @@ class FileParser(object):
                         # Mind the exception for ping. Will never get here
                         print "Redis server unavailable. Skipping transaction: " + redis_hash.hash_name
                     redis_hash.clear()
+                elif FileParser.HASH_NAME_REGEX.match(line):
+                    redis_hash.hash_name = line
                 elif FileParser.BLANK_LINE_REGEX.match(line):
                     pass
                 elif line[0] != "#":
